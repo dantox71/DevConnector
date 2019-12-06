@@ -1,11 +1,37 @@
 const express = require("express");
 const router = express.Router();
+const { check, validationResult } = require("express-validator/check");
 
-// @route   GET api/users
-// @desc    Test route
+// @route   POST api/users
+// @desc    Register a user
 // @access  Public
-router.get("/", (req, res) => {
-  res.send("User route");
-});
+router.post(
+  "/",
+  [
+    check("name", "Name is required")
+      .not()
+      .isEmpty(),
+
+    check("email", "Please enter correct email").isEmail(),
+    check("email", "Email is required")
+      .not()
+      .isEmpty(),
+    check(
+      "password",
+      "Please enter a password with 6 or more characters"
+    ).isLength({ min: 6 })
+  ],
+  (req, res) => {
+    const errors = validationResult(req);
+
+    //Check for errors
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    console.log(req.body);
+    res.send(req.body);
+  }
+);
 
 module.exports = router;
