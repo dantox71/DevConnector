@@ -67,4 +67,30 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
+// @route   GET api/posts/:post_id
+// @desc    Get one post by id
+// @access  Private
+router.get("/:post_id", auth, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.post_id);
+
+    if (!post) {
+      return res
+        .status(404)
+        .json({ msg: `Post with ${req.params.post_id} doesn't exist` });
+    }
+
+    res.json(post);
+  } catch (err) {
+    if (err.kind == "ObjectId") {
+      return res
+        .status(404)
+        .json({ msg: `Post with ${req.params.post_id} doesn't exist` });
+    }
+
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
+});
+
 module.exports = router;
