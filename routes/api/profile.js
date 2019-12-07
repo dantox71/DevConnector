@@ -126,7 +126,6 @@ router.get("/", async (req, res) => {
 
     res.json(profiles);
   } catch (err) {
-    console.error(err.message);
     res.status(500).send("Server error");
   }
 });
@@ -152,6 +151,25 @@ router.get("/user/:user_id", async (req, res) => {
     }
 
     res.status(500).send("Server error");
+  }
+});
+
+// @route   DELETE api/profile
+// @desc    Delete profile,user & posts
+// @access  Private
+router.delete("/", auth, async (req, res) => {
+  try {
+    //@todo - remove user's posts
+
+    //Remove Profile
+    await Profile.findOneAndRemove({ user: req.user.id });
+    //Remove user
+    await User.findOneAndRemove({ _id: req.user.id });
+
+    res.send(`User with id ${req.user.id} has been deleted(and his profile)`);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
   }
 });
 
