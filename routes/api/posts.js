@@ -31,11 +31,14 @@ router.post(
       //Already logged in user
       const user = await User.findById(req.user.id).select("-password");
 
+      const { name, avatar } = user;
+      const { text } = req.body;
+
       //Create new post object
       const newPost = new Post({
-        text: req.body.text,
-        name: user.name,
-        avatar: user.avatar,
+        text,
+        name,
+        avatar,
         user: req.user.id
       });
 
@@ -49,5 +52,19 @@ router.post(
     }
   }
 );
+
+// @route   GET api/posts
+// @desc    Get all posts
+// @access  Private
+router.get("/", auth, async (req, res) => {
+  try {
+    const posts = await Post.find().sort({ date: -1 });
+
+    res.json(posts);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
+});
 
 module.exports = router;
