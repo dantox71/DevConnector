@@ -186,4 +186,117 @@ router.put("/unlike/:post_id", auth, async (req, res) => {
   }
 });
 
+// @route    PUT api/posts/comment/:post_id
+// @desc     Comment on a post
+// @access   Private
+router.put(
+  "/comment/:post_id",
+  [
+    auth,
+    [
+      check("text", "Text is required")
+        .not()
+        .isEmpty()
+    ]
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+
+    //Check for erorrs
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+      const user = await User.findById(req.user.id);
+      const post = await Post.findById(req.params.post_id);
+
+      //Check if post doesn't exist
+      if (!post) {
+        return res
+          .status(404)
+          .json({ msg: `Post with ${req.params.post_id} id doesn't exist` });
+      }
+
+      //Check if not authorized
+      if (post.user.toString() !== req.user.id) {
+        return res.status(401).json({ msg: "User not authorized" });
+      }
+
+      const { text } = req.body;
+      const { name, avatar } = user;
+
+      const newComment = {
+        user: req.user.id,
+        text,
+        name,
+        avatar
+      };
+
+      post.comments.unshift(newComment);
+
+      //Save in database
+      await post.save();
+
+      res.json(post.comments);
+    } catch (err) {
+      //Check if post doesn't exist
+      if (err.kind === "ObjectId") {
+        return res
+          .status(404)
+          .json({ msg: `Post with ${req.params.post_id} id doesn't exist` });
+      }
+
+      console.error(err.message);
+      res.status(500).send("Server Error");
+    }
+  }
+);
+
+// @route    DELETE api/posts/comment/:post_id/:comment_id
+// @desc     Delete  a  comment by it's id
+// @access   Private
+router.delete("/comment/:post_id/:comment_id", auth, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.post_id);
+
+    //Make sure that post exists
+    if (!post) {
+      return res.status(404).json({ msg: "Post doesn't exist" });
+    }
+
+    const comment = post.comments.find(
+      comment => comment.id === req.params.comment_id
+    );
+
+    //Make sure comment exists
+    if (!comment) {
+      return res.status(404).json({ msg: "Comment doesn't exist" });
+    }
+
+    //Check if not authorized
+    if (comment.user.toString() !== req.user.id) {
+      return res.status(401).json({ msg: "User not authorized" });
+    }
+
+    const removeIndex = post.comments
+      .map(comment => comment.user)
+      .indexOf(req.user.id);
+
+    post.comments.splice(removeIndex, 1);
+
+    //Save in database
+    await post.save();
+
+    res.json(post.comments);
+  } catch (err) {
+    if ((err.kind = "ObjectId")) {
+      return res.status(404).json({ msg: "Post doesn't exist" });
+    }
+
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
+
 module.exports = router;
