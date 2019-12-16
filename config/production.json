@@ -1,0 +1,6 @@
+{
+  "mongoURI": "mongodb+srv://deniu2001:Xdupax123@devconnector-s1y7a.mongodb.net/test?retryWrites=true&w=majority",
+  "jwtSecret": "jwtSecret",
+  "githubClientId": "4d14112fe4d0755768ae",
+  "githubSecret": "b94ee454b5e776f353f3bfe3e096421450f17e53"
+}
