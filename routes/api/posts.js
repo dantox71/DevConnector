@@ -142,6 +142,7 @@ router.put("/like/:post_id", auth, async (req, res) => {
       return res.status(400).json({ msg: "Post already liked" });
     }
 
+    //Add post
     post.likes.unshift({ user: req.user.id });
 
     //Save changes in database
@@ -167,7 +168,8 @@ router.put("/unlike/:post_id", auth, async (req, res) => {
       post.likes.filter(like => like.user.toString() === req.user.id).length ===
       0
     ) {
-      return res.status(400).json({ msg: "Post has not yet been liked" });
+      console.log("Post hasn't yet been liked");
+      return res.status(400).json({ msg: "Post hasn't yet been liked" });
     }
 
     //Get remove index
@@ -213,15 +215,16 @@ router.put(
 
       //Check if post doesn't exist
       if (!post) {
+        console.log("xd");
         return res
           .status(404)
           .json({ msg: `Post with ${req.params.post_id} id doesn't exist` });
       }
 
-      //Check if not authorized
-      if (post.user.toString() !== req.user.id) {
-        return res.status(401).json({ msg: "User not authorized" });
-      }
+      // //Check if not authorized
+      // if (post.user.toString() !== req.user.id) {
+      //   return res.status(401).json({ msg: "User not authorized" });
+      // }
 
       const { text } = req.body;
       const { name, avatar } = user;
@@ -242,6 +245,7 @@ router.put(
     } catch (err) {
       //Check if post doesn't exist
       if (err.kind === "ObjectId") {
+        console.log("xd");
         return res
           .status(404)
           .json({ msg: `Post with ${req.params.post_id} id doesn't exist` });
@@ -280,8 +284,8 @@ router.delete("/comment/:post_id/:comment_id", auth, async (req, res) => {
     }
 
     const removeIndex = post.comments
-      .map(comment => comment.user)
-      .indexOf(req.user.id);
+      .map(comment => comment.id)
+      .indexOf(req.params.comment_id);
 
     post.comments.splice(removeIndex, 1);
 

@@ -7,6 +7,7 @@ const config = require("config");
 
 const Profile = require("../../models/Profile");
 const User = require("../../models/User");
+const Post = require("../../models/Post");
 
 // @route   GET api/profile/me
 // @desc    Get current user's profile
@@ -51,7 +52,7 @@ router.post(
 
     //Check for errors
     if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ errors: errors.array() });
     }
 
     //Excract profile data from req.body
@@ -110,11 +111,11 @@ router.post(
         //Save to the database
         await profile.save();
 
-        res.json(profile);
+        return res.json(profile);
       }
     } catch (err) {
       console.error(err.message);
-      res.status(500).send("Server Error");
+      return res.status(500).send("Server Error");
     }
   }
 );
@@ -161,14 +162,17 @@ router.get("/user/:user_id", async (req, res) => {
 // @access  Private
 router.delete("/", auth, async (req, res) => {
   try {
-    //@todo - remove user's posts
+    //Remove user's Posts
+    await Post.deleteMany({ user: req.user.id }); //Remove all posts of logged in user his account is deleted
 
-    //Remove Profile
+    //Remove user's Profile
     await Profile.findOneAndRemove({ user: req.user.id });
-    //Remove user
+    //Remove user account
     await User.findOneAndRemove({ _id: req.user.id });
 
-    res.send(`User with id ${req.user.id} has been deleted(and his profile)`);
+    res.send(
+      `User with id ${req.user.id} has been deleted(and his profile also has been deleted)`
+    );
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");
@@ -252,8 +256,6 @@ router.delete("/experience/:exp_id", auth, async (req, res) => {
       .map(item => item.id)
       .indexOf(req.params.exp_id);
 
-    console.log(removeIndex);
-
     //Check if experience doesn't exist
     if (removeIndex == -1) {
       return res
@@ -265,7 +267,7 @@ router.delete("/experience/:exp_id", auth, async (req, res) => {
 
     await profile.save();
 
-    res.json({ profile });
+    res.json(profile);
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");
@@ -352,8 +354,6 @@ router.delete("/education/:edu_id", auth, async (req, res) => {
       .map(item => item.id)
       .indexOf(req.params.edu_id);
 
-    console.log(removeIndex);
-
     //Check if education doesn't exist
     if (removeIndex == -1) {
       return res
@@ -365,7 +365,7 @@ router.delete("/education/:edu_id", auth, async (req, res) => {
 
     await profile.save();
 
-    res.json({ profile });
+    res.json(profile);
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");
@@ -380,7 +380,7 @@ router.get("/github/:username", (req, res) => {
     const options = {
       uri: `https://api.github.com/users/${
         req.params.username
-      }/repos?per_page=3&sort=created:asc&client_id=${config.get(
+      }/repos?per_page=5&sort=created:asc&client_id=${config.get(
         "githubClientId"
       )}
       &client_secret=${config.get("githubSecret")}`,

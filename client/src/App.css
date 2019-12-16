@@ -61,6 +61,12 @@ img {
   line-height: 1.2;
   margin-bottom: 1rem;
 }
+
+.small-text {
+  font-size: 0.8rem;
+  color: #777;
+}
+
 .lead {
   font-size: 1.5rem;
   margin-bottom: 1rem;
@@ -612,4 +618,12 @@ img {
     padding: 0.3rem 0.4frm;
     margin: 0.5rem 0;
   }
+}
+
+.comment-count {
+  color: black;
+  padding: 0.1rem 0.4rem;
+  margin: 0 0.3rem;
+  border-radius: 50%;
+  background: white;
 }

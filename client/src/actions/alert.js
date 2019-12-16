@@ -5,9 +5,11 @@ export const setAlert = (msg, alertType, timeout = 4000) => dispatch => {
   //Generate random ID
   const id = uuid.v4();
 
+  const alert = { msg, alertType, id };
+
   dispatch({
     type: SET_ALERT,
-    payload: { msg, alertType, id }
+    payload: alert
   });
 
   setTimeout(
